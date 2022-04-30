@@ -4,46 +4,32 @@ import './Game.css';
 
 function Square(props) {
     return (
-        <button className="square" onClick={props.onClick}>
+        <button id={props.id} className="square" onClick={props.onClick}>
             {props.value}
         </button>
     );
 }
 
 class Board extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            squares: Array(9).fill(null),
-            xIsNext: true,
-        };
-    }
-
-    handleClick(i) {
-        const squares = this.state.squares.slice();
-        if(calculateWinner(squares) || squares[i]) {
-            return;
-        }
-        squares[i] = this.state.xIsNext ? 'X' : 'O';
-        this.setState({squares: squares, xIsNext: !this.state.xIsNext});
+    handleClick(e) {
+        if(calculateWinner(this.props.squares)) return;
+        this.props.updateBoard(e.target.id);
     }
 
     renderSquare(i) {
-        console.log(this.state.squares[i])
         return <Square
-            value={this.state.squares[i]}
-            onClick={() => this.handleClick(i)}
+            id={i}
+            value={this.props.squares[i]}
+            onClick={this.handleClick.bind(this)}
         />;
     }
 
     render() {
-        const winner = calculateWinner(this.state.squares);
+        const winner = calculateWinner(this.props.squares);
         let status;
 
-        if(winner) {
-            status = (winner === 'Tie' ? 'Tie Game' : 'Winner: ' + winner);
-        }
-        else { status = 'NEXT PLAYER: ' + (this.state.xIsNext ? 'X' : 'O'); }
+        if(winner) status = (winner === 'Tie' ? 'Tie Game' : 'Winner: ' + winner);
+        else status = 'NEXT PLAYER: ' + (this.props.xIsNext ? 'X' : 'O');
 
         return (
             <div>
@@ -101,18 +87,36 @@ function calculateWinner(squares) {
 }
 
 class Game extends React.Component {
+    state = {
+        squares: ['', '', '', '', '', '', '', '', ''],
+        xIsNext: true
+    }
+
     render() {
         return (
-            <div className="game">
+            <div className="game" id='game'>
                 <div className="game-board" >
-                    <Board />
+                    <Board squares={this.state.squares} xIsNext={this.state.xIsNext} updateBoard={this.updateBoard.bind(this)}/>
                 </div>
                 <div className="game-info">
                     <div>{/* status */}</div>
                     <ol>{/* TODO */}</ol>
                 </div>
+                <div className='container'>
+                    <button className='button' onClick={this.reset.bind(this)}>Play Again</button>
+                </div>
             </div>
         );
+    }
+
+    updateBoard(n) {
+        const squares = this.state.squares;
+        squares[n] = this.state.xIsNext ? 'X' : 'O';
+        this.setState({squares: squares, xIsNext: !this.state.xIsNext});
+    }
+
+    reset() {
+        this.setState({squares: ['', '', '', '', '', '', '', '', ''], xIsNext: true});
     }
 }
 
